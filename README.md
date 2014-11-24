@@ -16,9 +16,9 @@ License: GPLv2
 2. Добавить в AppKernel.php строку `new Ulogin\AuthBundle\UloginAuthBundle(),`
 3. В своем .twig шаблоне добавить вызов 
 
-    
+
     {{ include('UloginAuthBundle::widget.html.twig', { "uLoginID": "123456" }) }}
-    
+
 где "123456" - uLoginID виджета из личного кабинета на сайте http://ulogin.ru
 
 
