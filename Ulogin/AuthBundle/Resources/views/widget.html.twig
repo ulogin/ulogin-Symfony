@@ -1,0 +1,4 @@
+<script src="//ulogin.ru/js/ulogin.js"></script>
+
+<span>{{ 'sign_via_social'|trans({}, 'UloginAuthBundle') }}</span>
+<div id="uLogin_{{ uLoginID }}" data-uloginid="{{ uLoginID }}" style="height:370px;" data-ulogin="redirect_uri={{ url("ulogin_auth_index",{"backurl":path(app.request.attributes.get('_route'),app.request.attributes.get('_route_params'))})|url_encode }}"></div>
