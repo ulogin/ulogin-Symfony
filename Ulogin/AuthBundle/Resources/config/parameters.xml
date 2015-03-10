@@ -6,6 +6,8 @@
     <parameters>
         <parameter key="ulogin_auth.routing.success_auth">homepage</parameter>
         <parameter key="ulogin_auth.secret_key">~Zxl-4Qax-MH6%ihLK-vK8$WDqy0PPe^7MzlEIx</parameter>
+        <parameter key="ulogin_auth.success_handler">security.success_login_handler</parameter>
+        <parameter key="ulogin_auth.photo_directory">/static/files/photo/</parameter>
     </parameters>
 
 </container>

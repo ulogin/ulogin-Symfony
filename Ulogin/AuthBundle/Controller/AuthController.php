@@ -35,6 +35,17 @@ class AuthController extends Controller
             //получаем связанного с данной соцсетью юзера
             $user = $this->container->get('fos_user.user_manager')->findUserBy(array('id'=>$userByIdentity->getUserId()));
             //если такой юзер есть - авторизуем его
+
+            //если поддерживается photo у юзера
+            if(is_callable(array($user,'setPhoto')) && is_callable(array($user,'getPhoto'))){
+                if($file = $this->saveFile($data)) {
+                    $user->setPhoto($file);
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($user);
+                    $em->flush();
+                }
+            }
+
             if(!empty($user)){
 
                 try {
@@ -42,6 +53,8 @@ class AuthController extends Controller
                         $this->container->getParameter('fos_user.firewall_name'),
                         $user,
                         $response);
+                    return $this->container->get($this->container->getParameter('ulogin_auth.success_handler'))
+                        ->onAuthenticationSuccess($request, $this->container->get('security.context')->getToken());
                 } catch (AccountStatusException $ex) {
                     // We simply do not authenticate users which do not pass the user
                     // checker (not enabled, expired, etc.).
@@ -62,6 +75,15 @@ class AuthController extends Controller
                 $uloginUser->setUserId($user->getId());
 
                 $em = $this->getDoctrine()->getManager();
+
+                //если поддерживается photo у юзера
+                if(is_callable(array($user,'setPhoto')) && is_callable(array($user,'getPhoto'))){
+                    if($file = $this->saveFile($data)) {
+                        $user->setPhoto($file);
+                        $em->persist($user);
+                    }
+                }
+
                 $em->persist($uloginUser);
                 $em->flush();
 
@@ -86,6 +108,36 @@ class AuthController extends Controller
         }
 
         return $response;
+    }
+
+    private function saveFile($data = array())
+    {
+        $root_path = $this->get('kernel')->getRootDir();
+        $file_url = isset($data['photo_big']) ? $data['photo_big'] : (isset($data['photo']) ? $data['photo'] : false);
+        $q = isset($file_url) ? true : false;
+
+        //directory to import to
+        $relativePath = $this->container->getParameter('ulogin_auth.photo_directory');
+        $avatar_dir = $root_path . '/../web' . $relativePath;
+        if($file_url && !file_exists($avatar_dir)) {
+            mkdir($avatar_dir);
+        }
+
+        if($file_url) {
+            $tmp = explode('.', $file_url);
+            $ext = array_pop($tmp); // расширение
+            $new_name = md5(rand() . time()) . '.' . $ext; // новое имя с расширением
+            $full_path = $avatar_dir . $new_name; // полный путь с новым именем и расширением
+
+            $tmp = $this->getResponse($file_url);
+            if($tmp) {
+                if(file_put_contents($full_path, $this->getResponse($file_url))){
+                    return $relativePath.$new_name;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
