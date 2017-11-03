@@ -1,0 +1,10 @@
+{
+    "name": "ulogin/symfony",
+    "description": "Symfony+FOSUserBundle adapter for http://ulogin.ru",
+    "type": "library",
+    "require": {
+        "symfony/symfony": "^3.3",
+        "friendsofsymfony/user-bundle": "^2.0"
+    },
+    "license": "GPLv2"
+}
