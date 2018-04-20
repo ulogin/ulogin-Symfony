@@ -92,7 +92,11 @@ class AuthController extends Controller
             //если юзер с данным email еще не зарегистрирован
             } else {
 
-                $username = $this->generateNickname($data['first_name'], $data['last_name'], $data['nickname']);
+                $username = $this->generateNickname(
+                    $data['first_name'],
+                    isset($data['last_name']) ? $data['last_name'] : '',
+                    isset($data['nickname']) ? $data['nickname'] : ''
+                );
 
                 $user = $this->container->get('fos_user.user_manager')->createUser();
                 $user->setUsername($username);
