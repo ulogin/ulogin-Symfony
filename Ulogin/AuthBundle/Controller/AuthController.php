@@ -4,6 +4,7 @@ namespace Ulogin\AuthBundle\Controller;
 use Doctrine\Common\Persistence\ObjectManager;
 use FOS\UserBundle\Model\UserInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,8 +54,18 @@ class AuthController extends Controller
                         $this->container->getParameter('fos_user.firewall_name'),
                         $user,
                         $response);
+
+                    // http://symfony.com/blog/new-in-symfony-2-6-security-component-improvements
+                    if ($this->container->has('security.token_storage')) { // Symfony 3.0.0 onwards
+                        $token_storage = $this->container->get('security.token_storage');
+                    } elseif ($this->container->has('security.context')) { // Before Symfony 3.0.0
+                        $token_storage = $this->container->get('security.context');
+                    } else { // Neither
+                        throw new ServiceNotFoundException('Please provide service "security.context" or "security.token_storage".');
+                    }
+
                     return $this->container->get($this->container->getParameter('ulogin_auth.success_handler'))
-                        ->onAuthenticationSuccess($request, $this->container->get('security.context')->getToken());
+                        ->onAuthenticationSuccess($request, $token_storage->getToken());
                 } catch (AccountStatusException $ex) {
                     // We simply do not authenticate users which do not pass the user
                     // checker (not enabled, expired, etc.).
