@@ -211,8 +211,9 @@ class AuthController extends Controller
         $first_name_s = substr($first_name, 0, 1);
 
         $variants = array();
-        if (!empty($nickname))
+        if (!empty($nickname)) {
             $variants[] = $nickname;
+        }
         $variants[] = $first_name;
         if (!empty($last_name)) {
             $last_name = $this->translitIt($last_name);
