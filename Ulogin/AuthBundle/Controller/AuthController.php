@@ -14,6 +14,19 @@ use Ulogin\AuthBundle\Entity\UloginUser;
 
 class AuthController extends Controller
 {
+
+    const OPT_ALLOW_SHORT_NAMES = 'OPT_ALLOW_SHORT_NAMES';
+    const OPT_NAMES_WITH_NETWORK = 'OPT_NAMES_WITH_NETWORK';
+
+    protected $options = [
+        'OPT_ALLOW_SHORT_NAMES' => true,
+        'OPT_NAMES_WITH_NETWORK' => false,
+    ];
+
+    public function __construct($options = []) {
+        $this->options = array_merge($this->options, $options);
+    }
+
     public function indexAction(Request $request)
     {
         $data = $this->getUserData($_POST['token']);
@@ -203,7 +216,7 @@ class AuthController extends Controller
      * @param array $delimiters
      * @return string
      */
-    private function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $delimiters=array('.', '_'))
+    private function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $delimiters=array('.', '_'), $network="")
     {
         $delim = array_shift($delimiters);
 
@@ -211,12 +224,16 @@ class AuthController extends Controller
         $first_name_s = substr($first_name, 0, 1);
 
         $variants = array();
-        if (!empty($nickname)) {
-            $variants[] = $nickname;
+        if ( $this->options[self::OPT_ALLOW_SHORT_NAMES] ) {
+            if (!empty($nickname)) {
+                $variants[] = $nickname;
+            }
+            $variants[] = $first_name;
         }
-        $variants[] = $first_name;
         if (!empty($last_name)) {
-            $last_name = $this->translitIt($last_name);
+            if ( $this->options[self::OPT_ALLOW_SHORT_NAMES] ) {
+                $last_name = $this->translitIt($last_name);
+            }
             $variants[] = $first_name.$delim.$last_name;
             $variants[] = $last_name.$delim.$first_name;
             $variants[] = $first_name_s.$delim.$last_name;
@@ -255,6 +272,13 @@ class AuthController extends Controller
             $variants[] = $last_name.$first_name_s.$date[0].$date[1];
             $variants[] = $last_name.$first_name_s.$delim.$date[0].$date[1];
         }
+
+        if ( $this->options[self::OPT_NAMES_WITH_NETWORK] && !empty($network) ) {
+            foreach($variants as &$variant) {
+                $variant .= ' #' . $network;
+            }
+        }
+
         $i=0;
 
         $exist = true;
