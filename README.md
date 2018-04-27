@@ -38,6 +38,19 @@ License: GPLv2
    Иначе будут создаваться предсказуемые пароли для новых пользователей.
    Значение можно получить на https://www.random.org/strings/ или запустить `base64 < /dev/urandom | head -n 1` на Linux
 
+### Настройка генерации имён пользователей
+_Черновик, пока не работает :(_
+
+`services.yml`:
+```
+services:
+  Ulogin\AuthBundle\Controller\AuthController:
+    class: 'Ulogin\AuthBundle\Controller\AuthController'
+    arguments:
+      -
+        '!php/const:\Ulogin\AuthBundle\Controller\AuthController::OPT_ALLOW_SHORT_NAMES': false
+        '!php/const:\Ulogin\AuthBundle\Controller\AuthController::OPT_NAMES_WITH_NETWORK': true
+```
 
 ## Дополнительная информация
 
