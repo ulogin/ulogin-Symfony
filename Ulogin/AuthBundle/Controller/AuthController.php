@@ -211,10 +211,6 @@ class AuthController extends Controller
         $first_name_s = substr($first_name, 0, 1);
 
         $variants = array();
-        if (!empty($nickname)) {
-            $variants[] = $nickname;
-        }
-        $variants[] = $first_name;
         if (!empty($last_name)) {
             $last_name = $this->translitIt($last_name);
             $variants[] = $first_name.$delim.$last_name;
@@ -226,10 +222,6 @@ class AuthController extends Controller
         }
         if (!empty($bdate)) {
             $date = explode('.', $bdate);
-            $variants[] = $first_name.$date[2];
-            $variants[] = $first_name.$delim.$date[2];
-            $variants[] = $first_name.$date[0].$date[1];
-            $variants[] = $first_name.$delim.$date[0].$date[1];
             $variants[] = $first_name.$delim.$last_name.$date[2];
             $variants[] = $first_name.$delim.$last_name.$delim.$date[2];
             $variants[] = $first_name.$delim.$last_name.$date[0].$date[1];
@@ -255,6 +247,17 @@ class AuthController extends Controller
             $variants[] = $last_name.$first_name_s.$date[0].$date[1];
             $variants[] = $last_name.$first_name_s.$delim.$date[0].$date[1];
         }
+        $variants[] = $first_name;
+        if (!empty($nickname)) {
+            $variants[] = $nickname;
+        }
+        if (!empty($bdate)) {
+            $variants[] = $first_name.$date[2];
+            $variants[] = $first_name.$delim.$date[2];
+            $variants[] = $first_name.$date[0].$date[1];
+            $variants[] = $first_name.$delim.$date[0].$date[1];
+        }
+
         $i=0;
 
         $exist = true;
