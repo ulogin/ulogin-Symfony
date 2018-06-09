@@ -50,10 +50,7 @@ class AuthController extends Controller
             if(!empty($user)){
 
                 try {
-                    $this->container->get('fos_user.security.login_manager')->loginUser(
-                        $this->container->getParameter('fos_user.firewall_name'),
-                        $user,
-                        $response);
+                    $this->authenticateUser($user, $response);
 
                     // http://symfony.com/blog/new-in-symfony-2-6-security-component-improvements
                     if ($this->container->has('security.token_storage')) { // Symfony 3.0.0 onwards
