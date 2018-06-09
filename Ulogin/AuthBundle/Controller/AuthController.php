@@ -2,14 +2,20 @@
 namespace Ulogin\AuthBundle\Controller;
 
 use Doctrine\Common\Persistence\ObjectManager;
+use FOS\UserBundle\Event\FilterUserResponseEvent;
+use FOS\UserBundle\Event\UserEvent;
+use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\AccountStatusException;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\SecurityEvents;
 use Ulogin\AuthBundle\Entity\UloginUser;
 
 class AuthController extends Controller
@@ -29,6 +35,9 @@ class AuthController extends Controller
         $auth_success_route = $this->container->getParameter('ulogin_auth.routing.success_auth');
         $backurl = $auth_success_route ? $this->container->get('router')->generate($auth_success_route) : urldecode($request->get('backurl'));
         $response = new RedirectResponse($backurl);
+
+        /** @var EventDispatcherInterface $ed */
+        $ed = $this->container->get('event_dispatcher');
 
         //если пользователь уже авторизовывался на этом сайте через соцсеть
         if(!empty($userByIdentity)){
@@ -61,8 +70,11 @@ class AuthController extends Controller
                         throw new ServiceNotFoundException('Please provide service "security.context" or "security.token_storage".');
                     }
 
+                    $authentication_token = $token_storage->getToken();
+                    $ed->dispatch(SecurityEvents::INTERACTIVE_LOGIN, new InteractiveLoginEvent($request, $authentication_token));
+
                     return $this->container->get($this->container->getParameter('ulogin_auth.success_handler'))
-                        ->onAuthenticationSuccess($request, $token_storage->getToken());
+                        ->onAuthenticationSuccess($request, $authentication_token);
                 } catch (AccountStatusException $ex) {
                     // We simply do not authenticate users which do not pass the user
                     // checker (not enabled, expired, etc.).
@@ -96,6 +108,7 @@ class AuthController extends Controller
                 $em->flush();
 
                 $this->authenticateUser($user,$response);
+                $ed->dispatch(FOSUserEvents::SECURITY_IMPLICIT_LOGIN, new UserEvent($user));
 
             //если юзер с данным email еще не зарегистрирован
             } else {
@@ -115,6 +128,7 @@ class AuthController extends Controller
                 $this->container->get('fos_user.user_manager')->updateUser($user);
 
                 $this->authenticateUser($user,$response);
+                $ed->dispatch(FOSUserEvents::REGISTRATION_COMPLETED, new FilterUserResponseEvent($user, $request, $response));
             }
 
         }
