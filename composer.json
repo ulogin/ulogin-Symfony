@@ -1,7 +1,7 @@
 {
     "name": "ulogin/symfony",
     "description": "Symfony+FOSUserBundle adapter for http://ulogin.ru",
-    "version": "1.1.0-dev",
+    "version": "1.1.1-dev",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -9,7 +9,7 @@
         }
     },
     "require": {
-        "symfony/symfony": "^2.5 || ^3.0",
+        "symfony/symfony": "^2.5 || ^3.0 || ^4.0",
         "friendsofsymfony/user-bundle": "^2.0"
     },
     "license": "GPLv2"
