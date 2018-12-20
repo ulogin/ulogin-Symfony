@@ -1,8 +1,8 @@
 {
     "name": "ulogin/symfony",
     "description": "Symfony+FOSUserBundle adapter for http://ulogin.ru",
-    "version": "1.1.1-dev",
-    "type": "library",
+    "version": "1.1.2-dev",
+    "type": "symfony-bundle",
     "autoload": {
         "psr-4": {
             "Ulogin\\": "Ulogin"
